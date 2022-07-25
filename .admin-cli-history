@@ -90,3 +90,5 @@ use myl
 create 333 csf:333@127.0.0.1:3306/rr
 use myl
 create 333 csf:333@127.0.0.1:3306/rr
+use myl
+create 333 csf:333@127.0.0.1:3306/rr

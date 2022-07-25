@@ -14,8 +14,8 @@ type procedure struct {
 	quit          func() bool
 }
 
-func NewProcedure(app *grumble.App, databaseAlias string, quit func() bool) *procedure {
-	return &procedure{app: app, databaseAlias: databaseAlias, quit: quit}
+func NewProcedure(app *grumble.App, databaseAlias string, collection string, quit func() bool) *procedure {
+	return &procedure{app: app, databaseAlias: databaseAlias, collection: collection, quit: quit}
 }
 
 func (p *procedure) addCommands() {

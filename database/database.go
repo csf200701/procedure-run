@@ -85,7 +85,7 @@ func (d *database) addCommands() {
 					c.App.Println(fmt.Sprintf("%v，错误：%v", info, err))
 					return nil
 				}
-				procedure.NewProcedure(c.App, databaseName, func() bool {
+				procedure.NewProcedure(c.App, databaseName, v, func() bool {
 					d.Run()
 					return true
 				}).Run()

@@ -3,21 +3,24 @@ package database
 import (
 	"fmt"
 	"net"
+	"procedure-run/connector"
 	"strconv"
 
-	"gopkg.in/AlecAivazis/survey.v1"
-	surveycore "gopkg.in/AlecAivazis/survey.v1/core"
+	survey "github.com/AlecAivazis/survey/v2"
 )
 
-type Collection struct {
-	Host     string `survey:"host"`
-	Port     string `survey:"port"`
-	User     string `survey:"user"`
-	Password string `survey:"password"`
-	DbName   string `survey:"db"`
-}
-
 var qs = []*survey.Question{
+	{
+		Name: "type",
+		Prompt: &survey.Select{
+			Message: "数据库类型（Mysql）?",
+			Options: []string{"Mysql", "PostgreSQL", "Oracle"},
+			Default: "Mysql",
+		},
+		Validate: func(ans interface{}) error {
+			return nil
+		},
+	},
 	{
 		Name:   "host",
 		Prompt: &survey.Input{Message: "主机地址（127.0.0.1）?"},
@@ -58,11 +61,6 @@ var qs = []*survey.Question{
 			return nil
 		},
 		Transform: survey.Title,
-		// Prompt: &survey.Select{
-		// 	Message: "Choose a color:",
-		// 	Options: []string{"red", "blue", "green"},
-		// 	Default: "red",
-		// },
 	},
 	{
 		Name:   "user",
@@ -84,7 +82,6 @@ var qs = []*survey.Question{
 			}
 			return nil
 		},
-		//Transform: survey.Title,
 	},
 	{
 		Name:   "db",
@@ -95,14 +92,31 @@ var qs = []*survey.Question{
 			}
 			return nil
 		},
-		//Transform: survey.Title,
 	},
 }
 
-func Ask() *Collection {
-	surveycore.ErrorTemplate = `{{color "red"}}{{ ErrorIcon }} 对不起, 校验失败: {{.Error}}{{color "reset"}}
+func Ask() *connector.Collection {
+	// 	survey.SelectQuestionTemplate = `
+	// {{- define "option"}}
+	// 	{{- if eq .SelectedIndex .CurrentIndex }}{{color .Config.Icons.SelectFocus.Format }}{{ .Config.Icons.SelectFocus.Text }} {{else}}{{color "default"}}  {{end}}
+	// 	{{- .CurrentOpt.Value}}{{ if ne ($.GetDescription .CurrentOpt) "" }} - {{color "cyan"}}{{ $.GetDescription .CurrentOpt }}{{end}}
+	// 	{{- color "reset"}}
+	// {{end}}
+	// {{- if .ShowHelp }}{{- color .Config.Icons.Help.Format }}{{ .Config.Icons.Help.Text }} {{ .Help }}{{color "reset"}}{{"\n"}}{{end}}
+	// {{- color .Config.Icons.Question.Format }}{{ .Config.Icons.Question.Text }} {{color "reset"}}
+	// {{- color "default+hb"}}{{ .Message }}{{ .FilterMessage }}{{color "reset"}}
+	// {{- if .ShowAnswer}}{{color "cyan"}} {{.Answer}}{{color "reset"}}{{"\n"}}
+	// {{- else}}
+	// {{- "  "}}{{- color "cyan"}}[使用箭头移动、空格选择、键入筛选{{- if and .Help (not .ShowHelp)}}, {{ .Config.HelpInput }} for more help{{end}}]{{color "reset"}}
+	// {{- "\n"}}
+	// {{- range $ix, $option := .PageEntries}}
+	// 	{{- template "option" $.IterateOption $ix $option}}
+	// {{- end}}
+	// {{- end}}`
+
+	survey.ErrorTemplate = `{{color .Icon.Format }}{{ .Icon.Text }} 对不起, 校验失败: {{ .Error.Error }}{{color "reset"}}
 	`
-	collection := new(Collection)
+	collection := new(connector.Collection)
 	survey.Ask(qs, collection)
 	return collection
 }

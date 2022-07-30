@@ -1,14 +1,13 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
+	"procedure-run/connector"
 	"procedure-run/procedure"
 	"procedure-run/store"
 
 	"github.com/desertbit/grumble"
 	"github.com/fatih/color"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/liushuochen/gotable"
 )
 
@@ -30,12 +29,15 @@ func (d *database) addCommands() {
 			a.String("databaseName", "数据库别名")
 		},
 		Run: func(c *grumble.Context) error {
-			collection := Ask()
 			databaseName := c.Args.String("databaseName")
 			_, err := store.GetDatabase(databaseName)
 			if err == nil {
 				c.App.Config().ErrorColor.Println("该数据库别名重复")
 				return nil
+			}
+			collection := Ask()
+			if collection.DbType == "" {
+				collection.DbType = connector.MYSQL
 			}
 			if collection.Host == "" {
 				collection.Host = "127.0.0.1"
@@ -52,13 +54,17 @@ func (d *database) addCommands() {
 			if collection.DbName == "" {
 				return nil
 			}
-			collectionStr := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v", collection.User, collection.Password, collection.Host, collection.Port, collection.DbName)
-			info, err := validateCollection(collectionStr)
-			if err != nil {
-				c.App.Config().ErrorColor.Println(fmt.Sprintf("%v，错误：%v", info, err))
+			connector := connector.Database(collection)
+			if connector == nil {
+				c.App.Config().ErrorColor.Println(collection.DbType + "该类型数据库创建失败")
 				return nil
 			}
-			store.AddDatabase(databaseName, collectionStr)
+			err = connector.ValidateCollection()
+			if err != nil {
+				c.App.Config().ErrorColor.Println(err.Error())
+				return nil
+			}
+			store.AddDatabase(databaseName, collection)
 			c.App.Println("创建成功")
 
 			return nil
@@ -88,12 +94,20 @@ func (d *database) addCommands() {
 			databases := store.FindAll()
 			l := len(databases)
 			if l > 0 {
-				table, err := gotable.Create("数据库别名", "数据库连接串")
+				table, err := gotable.Create("数据库别名", "数据库类型", "地址", "端口", "是否SSH")
 				if err != nil {
 					return nil
 				}
 				for _, database := range databases {
-					table.AddRow([]string{database.DatabaseAlias, database.DatabaseCollection})
+					isSSHName := "否"
+					if database.DatabaseCollection.IsSSH {
+						isSSHName = "是"
+					}
+					table.AddRow([]string{database.DatabaseAlias,
+						string(database.DatabaseCollection.DbType),
+						database.DatabaseCollection.Host,
+						database.DatabaseCollection.Port,
+						isSSHName})
 				}
 				fmt.Println(table)
 			} else {
@@ -112,9 +126,10 @@ func (d *database) addCommands() {
 			databaseName := c.Args.String("databaseName")
 			database, err := store.GetDatabase(databaseName)
 			if err == nil {
-				info, err := validateCollection(database.DatabaseCollection)
+				connector := connector.Database(database.DatabaseCollection)
+				err = connector.ValidateCollection()
 				if err != nil {
-					c.App.Config().ErrorColor.Println(fmt.Sprintf("%v，错误：%v", info, err))
+					c.App.Config().ErrorColor.Println(err.Error())
 					return nil
 				}
 				procedure.NewProcedure(c.App, databaseName, database.DatabaseCollection, func() bool {
@@ -127,19 +142,6 @@ func (d *database) addCommands() {
 			return nil
 		},
 	})
-}
-
-func validateCollection(c string) (string, error) {
-	db, err := sql.Open("mysql", c)
-	if err != nil {
-		return "该数据库连接失败", err
-	}
-	defer db.Close()
-	err = db.Ping()
-	if err != nil {
-		return "该数据库连接失败", err
-	}
-	return "", nil
 }
 
 func (d *database) Run() {

@@ -3,10 +3,10 @@ package store
 import (
 	"encoding/xml"
 	"errors"
-	"fmt"
 	"io/fs"
 	"io/ioutil"
 	"os"
+	"procedure-run/connector"
 	"sync"
 	"time"
 )
@@ -26,9 +26,9 @@ type DataBases struct {
 }
 
 type DataBase struct {
-	XMLName            xml.Name `xml:"Database"`
-	DatabaseAlias      string   `xml:"DatabaseAlias"`
-	DatabaseCollection string   `xml:"DatabaseCollection"`
+	XMLName            xml.Name              `xml:"Database"`
+	DatabaseAlias      string                `xml:"DatabaseAlias"`
+	DatabaseCollection *connector.Collection `xml:"DatabaseCollection"`
 }
 
 func init() {
@@ -57,7 +57,7 @@ func FindAll() []DataBase {
 	return pr.Databases.Databases
 }
 
-func AddDatabase(databaseAlias string, databaseCollection string) {
+func AddDatabase(databaseAlias string, databaseCollection *connector.Collection) {
 	pr.lock.Lock()
 	defer pr.lock.Unlock()
 	database, err := GetDatabase(databaseAlias)
@@ -111,7 +111,6 @@ func startStore() {
 func saveXML() {
 	pr.lock.Lock()
 	data, err := xml.MarshalIndent(pr, " ", " ")
-	fmt.Println(err)
 	if err == nil {
 		ioutil.WriteFile(dataFile, data, fs.ModeAppend)
 	}

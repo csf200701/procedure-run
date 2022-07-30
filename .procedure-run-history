@@ -212,3 +212,16 @@ ls
 create my
 ls
 use my
+ls
+create my
+ls
+call addCaseCreditorRightInfoCopys 5 @op
+use my
+call addCaseCreditorRightInfoCopys 5 @op
+ls
+create my2
+create my
+create my6
+create my7
+use my
+ls

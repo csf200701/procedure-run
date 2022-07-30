@@ -25,6 +25,9 @@ func (d *database) addCommands() {
 	d.app.AddCommand(&grumble.Command{
 		Name: "create",
 		Help: "创建数据库",
+		Flags: func(f *grumble.Flags) {
+			f.Bool("s", "ssh", false, "是否启用SSH连接")
+		},
 		Args: func(a *grumble.Args) {
 			a.String("databaseName", "数据库别名")
 		},
@@ -35,7 +38,9 @@ func (d *database) addCommands() {
 				c.App.Config().ErrorColor.Println("该数据库别名重复")
 				return nil
 			}
-			collection := Ask()
+			ssh := c.Flags.Bool("ssh")
+			collection := Ask(ssh)
+			collection.IsSSH = ssh
 			if collection.DbType == "" {
 				collection.DbType = connector.MYSQL
 			}

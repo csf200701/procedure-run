@@ -95,27 +95,30 @@ var qs = []*survey.Question{
 	},
 }
 
-func Ask() *connector.Collection {
-	// 	survey.SelectQuestionTemplate = `
-	// {{- define "option"}}
-	// 	{{- if eq .SelectedIndex .CurrentIndex }}{{color .Config.Icons.SelectFocus.Format }}{{ .Config.Icons.SelectFocus.Text }} {{else}}{{color "default"}}  {{end}}
-	// 	{{- .CurrentOpt.Value}}{{ if ne ($.GetDescription .CurrentOpt) "" }} - {{color "cyan"}}{{ $.GetDescription .CurrentOpt }}{{end}}
-	// 	{{- color "reset"}}
-	// {{end}}
-	// {{- if .ShowHelp }}{{- color .Config.Icons.Help.Format }}{{ .Config.Icons.Help.Text }} {{ .Help }}{{color "reset"}}{{"\n"}}{{end}}
-	// {{- color .Config.Icons.Question.Format }}{{ .Config.Icons.Question.Text }} {{color "reset"}}
-	// {{- color "default+hb"}}{{ .Message }}{{ .FilterMessage }}{{color "reset"}}
-	// {{- if .ShowAnswer}}{{color "cyan"}} {{.Answer}}{{color "reset"}}{{"\n"}}
-	// {{- else}}
-	// {{- "  "}}{{- color "cyan"}}[使用箭头移动、空格选择、键入筛选{{- if and .Help (not .ShowHelp)}}, {{ .Config.HelpInput }} for more help{{end}}]{{color "reset"}}
-	// {{- "\n"}}
-	// {{- range $ix, $option := .PageEntries}}
-	// 	{{- template "option" $.IterateOption $ix $option}}
-	// {{- end}}
-	// {{- end}}`
+func init() {
+	survey.SelectQuestionTemplate = `
+	{{- define "option"}}
+		{{- if eq .SelectedIndex .CurrentIndex }}{{color .Config.Icons.SelectFocus.Format }}{{ .Config.Icons.SelectFocus.Text }} {{else}}{{color "default"}}  {{end}}
+		{{- .CurrentOpt.Value}}{{ if ne ($.GetDescription .CurrentOpt) "" }} - {{color "cyan"}}{{ $.GetDescription .CurrentOpt }}{{end}}
+		{{- color "reset"}}
+	{{end}}
+	{{- if .ShowHelp }}{{- color .Config.Icons.Help.Format }}{{ .Config.Icons.Help.Text }} {{ .Help }}{{color "reset"}}{{"\n"}}{{end}}
+	{{- color .Config.Icons.Question.Format }}{{ .Config.Icons.Question.Text }} {{color "reset"}}
+	{{- color "default+hb"}}{{ .Message }}{{ .FilterMessage }}{{color "reset"}}
+	{{- if .ShowAnswer}}{{color "cyan"}} {{.Answer}}{{color "reset"}}{{"\n"}}
+	{{- else}}
+	{{- "  "}}{{- color "cyan"}}[使用箭头移动、空格选择、键入筛选{{- if and .Help (not .ShowHelp)}}, {{ .Config.HelpInput }} for more help{{end}}]{{color "reset"}}
+	{{- "\n"}}
+	{{- range $ix, $option := .PageEntries}}
+		{{- template "option" $.IterateOption $ix $option}}
+	{{- end}}
+	{{- end}}`
 
 	survey.ErrorTemplate = `{{color .Icon.Format }}{{ .Icon.Text }} 对不起, 校验失败: {{ .Error.Error }}{{color "reset"}}
 	`
+}
+
+func Ask(ssh bool) *connector.Collection {
 	collection := new(connector.Collection)
 	survey.Ask(qs, collection)
 	return collection

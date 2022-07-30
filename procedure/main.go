@@ -38,17 +38,6 @@ func (p *procedure) addCommands() {
 		Run: func(c *grumble.Context) error {
 			name := c.Args.String("name")
 			values := c.Args.StringList("values")
-			// db, err := sql.Open("mysql", connector.ConnectJoin())
-			// if err != nil {
-			// 	c.App.Config().ErrorColor.Println("该数据库连接失败，错误：", err)
-			// 	return nil
-			// }
-			// err = db.Ping()
-			// if err != nil {
-			// 	c.App.Config().ErrorColor.Println("该数据库连接失败，错误：", err)
-			// 	return nil
-			// }
-			// defer db.Close()
 			var sqlStr = "call %v("
 			var vList []interface{} = make([]interface{}, len(values))
 			vplus := 0
@@ -68,7 +57,6 @@ func (p *procedure) addCommands() {
 			}
 			sqlStr += ")"
 			vList = vList[0 : len(values)-vplus]
-			// rows, err := db.Query(fmt.Sprintf(sqlStr, name), vList...)
 			connector := connector.Database(p.collection)
 			rows, err := connector.Query(fmt.Sprintf(sqlStr, name), vList...)
 			if err != nil {
@@ -122,26 +110,14 @@ func (p *procedure) addCommands() {
 
 		},
 		Run: func(c *grumble.Context) error {
-			// db, err := sql.Open("mysql", p.collection)
-			// if err != nil {
-			// 	c.App.Config().ErrorColor.Println("该数据库连接失败，错误：", err)
-			// 	return nil
-			// }
-			// err = db.Ping()
-			// if err != nil {
-			// 	c.App.Config().ErrorColor.Println("该数据库连接失败，错误：", err)
-			// 	return nil
-			// }
-			// defer db.Close()
-			// show procedure status
-			// rows, err := db.Query("select routine_schema,routine_name,definer,last_altered,created from information_schema.ROUTINES")
 			connector := connector.Database(p.collection)
+			// show procedure status
 			rows, err := connector.Query("select routine_schema,routine_name,definer,last_altered,created from information_schema.ROUTINES")
 			if err != nil {
 				c.App.Config().ErrorColor.Println("获取该存储过程列表失败，错误：", err)
 				return nil
 			}
-			// defer rows.Close()
+			defer rows.Close()
 			table, err := gotable.Create("所属数据库", "存储过程名称", "创建时间")
 			if err != nil {
 				return nil

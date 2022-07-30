@@ -18,14 +18,6 @@ func (c MysqlConnector) ValidateCollection() error {
 	if err != nil {
 		return errors.New(info + "，错误：" + err.Error())
 	}
-	db, err := sql.Open("mysql", collectionStr)
-	if err != nil {
-		return errors.New("该数据库连接失败，错误：" + err.Error())
-	}
-	err = db.Ping()
-	if err != nil {
-		return errors.New("该数据库连接失败，错误：" + err.Error())
-	}
 	return nil
 }
 
@@ -39,13 +31,11 @@ func (c MysqlConnector) Query(query string, args ...interface{}) (*sql.Rows, err
 	if err != nil {
 		return nil, errors.New("该数据库连接失败，错误：" + err.Error())
 	}
+	defer db.Close()
 	err = db.Ping()
 	if err != nil {
 		return nil, errors.New("该数据库连接失败，错误：" + err.Error())
 	}
-	defer db.Close()
-	// show procedure status
-	//rows, err := db.Query("select routine_schema,routine_name,definer,last_altered,created from information_schema.ROUTINES")
 	rows, err := db.Query(query, args...)
 	if err != nil {
 		return nil, errors.New(err.Error())

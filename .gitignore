@@ -16,3 +16,4 @@ vendor/
 data/
 test/
 .vscode/
+pr-data.xml

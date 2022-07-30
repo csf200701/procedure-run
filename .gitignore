@@ -18,3 +18,4 @@ test/
 .vscode/
 pr-data.xml
 dist/
+.procedure-run-history

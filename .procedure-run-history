@@ -266,3 +266,12 @@ ls
 help
 create nnn
 clear
+ls
+use my
+ls
+help
+exit
+ls
+help
+ls
+create mm

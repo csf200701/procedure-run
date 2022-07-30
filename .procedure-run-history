@@ -252,3 +252,10 @@ create my6
 delete my5
 ls
 help
+ls
+create my7
+ls
+delete my7
+delete my6
+delete my5
+ls

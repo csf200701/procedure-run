@@ -43,7 +43,8 @@ func (c MysqlConnector) ConnectJoin() string {
 		client, _ := DialWithPasswd(fmt.Sprintf("%v:%v", c.SSHHost, c.SSHPort), c.SSHUser, c.SSHPassword)
 
 		procfStr := md5Str(fmt.Sprintf("%v:%v@tcp(%v:%v)/%v", c.User, c.Password, c.Host, c.Port, c.DbName)+"|"+
-			fmt.Sprintf("%v:%v@tcp(%v:%v)", c.SSHHost, c.SSHPort, c.SSHUser, c.SSHPassword)) + "tcp"
+			fmt.Sprintf("%v:%v@tcp(%v:%v)", c.SSHHost, c.SSHPort, c.SSHUser, c.SSHPassword)) + "+ssh"
+		// 注册ssh代理
 		mysql.RegisterDialContext(procfStr, (&ViaSSHDialer{client.client, nil}).Dial)
 		collectionStr = fmt.Sprintf("%v:%v@%v(%v:%v)/%v", c.User, c.Password, procfStr, c.Host, c.Port, c.DbName)
 	} else {

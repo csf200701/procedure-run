@@ -248,3 +248,7 @@ create my5
 create my6
 use my6
 ls
+create my6
+delete my5
+ls
+help

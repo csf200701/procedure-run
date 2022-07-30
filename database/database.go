@@ -59,6 +59,18 @@ func (d *database) addCommands() {
 			if collection.DbName == "" {
 				return nil
 			}
+			if collection.IsSSH {
+				if collection.SSHHost == "" {
+					collection.SSHHost = "127.0.0.1"
+				}
+				if collection.SSHPort == "" {
+					collection.SSHPort = "22"
+				}
+				if collection.SSHUser == "" {
+					collection.SSHUser = "root"
+				}
+			}
+
 			connector := connector.Database(collection)
 			if connector == nil {
 				c.App.Config().ErrorColor.Println(collection.DbType + "该类型数据库创建失败")

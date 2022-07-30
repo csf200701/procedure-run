@@ -225,3 +225,26 @@ create my6
 create my7
 use my
 ls
+create my7
+ls
+use my6
+ls
+help
+quit
+create my7
+2
+create my7
+help
+create help
+create -s
+create -s my5
+help
+clear
+create -s my5
+create my5
+create my5 -s
+create -s my5
+create my5
+create my6
+use my6
+ls

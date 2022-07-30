@@ -1,10 +1,13 @@
 package connector
 
 import (
+	"crypto/md5"
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"fmt"
 
+	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -13,50 +16,57 @@ type MysqlConnector struct {
 }
 
 func (c MysqlConnector) ValidateCollection() error {
-	collectionStr := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v", c.User, c.Password, c.Host, c.Port, c.DbName)
-	info, err := validateCollection(collectionStr)
+	db, err := c.fetchDB()
 	if err != nil {
-		return errors.New(info + "，错误：" + err.Error())
+		return err
 	}
+	defer db.Close()
 	return nil
 }
 
 func (c MysqlConnector) Query(query string, args ...interface{}) (*sql.Rows, error) {
-	collectionStr := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v", c.User, c.Password, c.Host, c.Port, c.DbName)
-	info, err := validateCollection(collectionStr)
+	db, err := c.fetchDB()
 	if err != nil {
-		return nil, errors.New(info + "，错误：" + err.Error())
-	}
-	db, err := sql.Open("mysql", collectionStr)
-	if err != nil {
-		return nil, errors.New("该数据库连接失败，错误：" + err.Error())
+		return nil, err
 	}
 	defer db.Close()
-	err = db.Ping()
-	if err != nil {
-		return nil, errors.New("该数据库连接失败，错误：" + err.Error())
-	}
 	rows, err := db.Query(query, args...)
 	if err != nil {
 		return nil, errors.New(err.Error())
 	}
-	//defer rows.Close()
 	return rows, nil
 }
 
 func (c MysqlConnector) ConnectJoin() string {
-	return fmt.Sprintf("%v:%v@tcp(%v:%v)/%v", c.User, c.Password, c.Host, c.Port, c.DbName)
+	var collectionStr string
+	if c.IsSSH {
+		client, _ := DialWithPasswd(fmt.Sprintf("%v:%v", c.SSHHost, c.SSHPort), c.SSHUser, c.SSHPassword)
+
+		procfStr := md5Str(fmt.Sprintf("%v:%v@tcp(%v:%v)/%v", c.User, c.Password, c.Host, c.Port, c.DbName)+"|"+
+			fmt.Sprintf("%v:%v@tcp(%v:%v)", c.SSHHost, c.SSHPort, c.SSHUser, c.SSHPassword)) + "tcp"
+		mysql.RegisterDialContext(procfStr, (&ViaSSHDialer{client.client, nil}).Dial)
+		collectionStr = fmt.Sprintf("%v:%v@%v(%v:%v)/%v", c.User, c.Password, procfStr, c.Host, c.Port, c.DbName)
+	} else {
+		collectionStr = fmt.Sprintf("%v:%v@tcp(%v:%v)/%v", c.User, c.Password, c.Host, c.Port, c.DbName)
+	}
+	return collectionStr
 }
 
-func validateCollection(c string) (string, error) {
-	db, err := sql.Open("mysql", c)
+func (c MysqlConnector) fetchDB() (*sql.DB, error) {
+	collectionStr := c.ConnectJoin()
+	db, err := sql.Open("mysql", collectionStr)
 	if err != nil {
-		return "该数据库连接失败", err
+		return nil, errors.New("该数据库连接失败，错误：" + err.Error())
 	}
-	defer db.Close()
 	err = db.Ping()
 	if err != nil {
-		return "该数据库连接失败", err
+		return nil, errors.New("该数据库连接失败，错误：" + err.Error())
 	}
-	return "", nil
+	return db, nil
+}
+
+func md5Str(str string) string {
+	h := md5.New()
+	h.Write([]byte(str))
+	return hex.EncodeToString(h.Sum(nil))
 }

@@ -11,13 +11,17 @@ const (
 )
 
 type Collection struct {
-	Host     string `survey:"host"`
-	Port     string `survey:"port"`
-	User     string `survey:"user"`
-	Password string `survey:"password"`
-	DbName   string `survey:"db"`
-	DbType   string `survey:"type"`
-	IsSSH    bool
+	Host        string `survey:"host"`
+	Port        string `survey:"port"`
+	User        string `survey:"user"`
+	Password    string `survey:"password"`
+	DbName      string `survey:"db"`
+	DbType      string `survey:"type"`
+	IsSSH       bool
+	SSHHost     string `survey:"ssh_host"`
+	SSHPort     string `survey:"ssh_port"`
+	SSHUser     string `survey:"ssh_user"`
+	SSHPassword string `survey:"ssh_password"`
 }
 
 type Connector interface {

@@ -19,3 +19,5 @@ test/
 pr-data.xml
 dist/
 .procedure-run-history
+
+dist/

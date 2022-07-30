@@ -3,6 +3,8 @@ package main
 import (
 	"procedure-run/database"
 
+	"procedure-run/asset"
+
 	grumble "github.com/desertbit/grumble"
 	color "github.com/fatih/color"
 )
@@ -26,12 +28,16 @@ var app = grumble.New(&grumble.Config{
 
 func init() {
 	app.SetPrintASCIILogo(func(a *grumble.App) {
-		a.Println("                   _   _     ")
-		a.Println(" ___ ___ _ _ _____| |_| |___ ")
-		a.Println("| . |  _| | |     | . | | -_|")
-		a.Println("|_  |_| |___|_|_|_|___|_|___|")
-		a.Println("|___|                        ")
-		a.Println()
+		// a.Println("                   _   _     ")
+		// a.Println(" ___ ___ _ _ _____| |_| |___ ")
+		// a.Println("| . |  _| | |     | . | | -_|")
+		// a.Println("|_  |_| |___|_|_|_|___|_|___|")
+		// a.Println("|___|                        ")
+		// a.Println()
+		dataArr, err := asset.Asset("file/mouse.txt")
+		if err == nil {
+			a.Println(string(dataArr))
+		}
 	})
 }
 

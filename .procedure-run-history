@@ -259,3 +259,10 @@ delete my7
 delete my6
 delete my5
 ls
+create my7
+ls
+help
+ls
+help
+create nnn
+clear

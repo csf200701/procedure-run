@@ -4,18 +4,20 @@ import (
 	"database/sql"
 	"fmt"
 	"procedure-run/procedure"
+	"procedure-run/store"
 
 	"github.com/desertbit/grumble"
+	"github.com/fatih/color"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/liushuochen/gotable"
 )
 
 type database struct {
-	app         *grumble.App
-	databaseMap map[string]string
+	app *grumble.App
 }
 
 func New(app *grumble.App) *database {
-	return &database{app: app, databaseMap: make(map[string]string)}
+	return &database{app: app}
 }
 
 func (d *database) addCommands() {
@@ -26,22 +28,39 @@ func (d *database) addCommands() {
 		Help: "创建数据库",
 		Args: func(a *grumble.Args) {
 			a.String("databaseName", "数据库别名")
-			a.String("collection", "数据库链接")
 		},
 		Run: func(c *grumble.Context) error {
+			collection := Ask()
 			databaseName := c.Args.String("databaseName")
-			collection := c.Args.String("collection")
-			if _, b := d.databaseMap[databaseName]; !b {
-				info, err := validateCollection(collection)
-				if err != nil {
-					c.App.Println(fmt.Sprintf("%v，错误：%v", info, err))
-					return nil
-				}
-				d.databaseMap[databaseName] = collection
-				c.App.Println("创建成功")
-			} else {
-				c.App.Println("该数据库别名重复")
+			_, err := store.GetDatabase(databaseName)
+			if err == nil {
+				c.App.Config().ErrorColor.Println("该数据库别名重复")
+				return nil
 			}
+			if collection.Host == "" {
+				collection.Host = "127.0.0.1"
+			}
+			if collection.Port == "" {
+				collection.Port = "3306"
+			}
+			if collection.User == "" {
+				collection.User = "root"
+			}
+			if collection.Password == "" {
+				return nil
+			}
+			if collection.DbName == "" {
+				return nil
+			}
+			collectionStr := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v", collection.User, collection.Password, collection.Host, collection.Port, collection.DbName)
+			info, err := validateCollection(collectionStr)
+			if err != nil {
+				c.App.Config().ErrorColor.Println(fmt.Sprintf("%v，错误：%v", info, err))
+				return nil
+			}
+			store.AddDatabase(databaseName, collectionStr)
+			c.App.Println("创建成功")
+
 			return nil
 		},
 	})
@@ -53,7 +72,8 @@ func (d *database) addCommands() {
 		},
 		Run: func(c *grumble.Context) error {
 			databaseName := c.Args.String("databaseName")
-			delete(d.databaseMap, databaseName)
+			//delete(d.databaseMap, databaseName)
+			store.DeleteDatabase(databaseName)
 			c.App.Println("删除成功")
 			return nil
 		},
@@ -65,8 +85,19 @@ func (d *database) addCommands() {
 
 		},
 		Run: func(c *grumble.Context) error {
-			for k, v := range d.databaseMap {
-				c.App.Println(fmt.Sprintf("%v", k), v)
+			databases := store.FindAll()
+			l := len(databases)
+			if l > 0 {
+				table, err := gotable.Create("数据库别名", "数据库连接串")
+				if err != nil {
+					return nil
+				}
+				for _, database := range databases {
+					table.AddRow([]string{database.DatabaseAlias, database.DatabaseCollection})
+				}
+				fmt.Println(table)
+			} else {
+				color.New(color.FgGreen, color.Bold).Println("空")
 			}
 			return nil
 		},
@@ -79,18 +110,19 @@ func (d *database) addCommands() {
 		},
 		Run: func(c *grumble.Context) error {
 			databaseName := c.Args.String("databaseName")
-			if v, b := d.databaseMap[databaseName]; b {
-				info, err := validateCollection(v)
+			database, err := store.GetDatabase(databaseName)
+			if err == nil {
+				info, err := validateCollection(database.DatabaseCollection)
 				if err != nil {
-					c.App.Println(fmt.Sprintf("%v，错误：%v", info, err))
+					c.App.Config().ErrorColor.Println(fmt.Sprintf("%v，错误：%v", info, err))
 					return nil
 				}
-				procedure.NewProcedure(c.App, databaseName, v, func() bool {
+				procedure.NewProcedure(c.App, databaseName, database.DatabaseCollection, func() bool {
 					d.Run()
 					return true
 				}).Run()
 			} else {
-				c.App.Println("该数据库别名不存在")
+				c.App.Config().ErrorColor.Println("该数据库别名不存在")
 			}
 			return nil
 		},
@@ -100,13 +132,11 @@ func (d *database) addCommands() {
 func validateCollection(c string) (string, error) {
 	db, err := sql.Open("mysql", c)
 	if err != nil {
-		//c.App.Println("该数据库连接失败，错误：", err)
 		return "该数据库连接失败", err
 	}
 	defer db.Close()
 	err = db.Ping()
 	if err != nil {
-		//c.App.Println("该数据库连接失败1，错误：", err)
 		return "该数据库连接失败", err
 	}
 	return "", nil

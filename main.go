@@ -18,7 +18,7 @@ var app = grumble.New(&grumble.Config{
 	//HelpHeadlineColor:     color.New(color.FgHiBlue),
 	//HelpHeadlineUnderline: true,
 	//HelpSubCommands: true,
-	HistoryFile: ".admin-cli-history",
+	HistoryFile: ".procedure-run-history",
 	Flags: func(f *grumble.Flags) {
 
 	},

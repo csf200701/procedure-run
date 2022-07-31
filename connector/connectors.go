@@ -27,7 +27,7 @@ type Collection struct {
 type Connector interface {
 	ValidateCollection() error
 	Query(query string, args ...interface{}) (*sql.Rows, error)
-	ConnectJoin() string
+	ConnectJoin() (string, error)
 }
 
 func Database(c *Collection) Connector {

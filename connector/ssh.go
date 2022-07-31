@@ -20,13 +20,13 @@ type ViaSSHDialer struct {
 type remoteScriptType byte
 type remoteShellType byte
 
-const (
-	cmdLine remoteScriptType = iota
-	rawScript
-	scriptFile
-	interactiveShell remoteShellType = iota
-	nonInteractiveShell
-)
+// const (
+// 	cmdLine remoteScriptType = iota
+// 	rawScript
+// 	scriptFile
+// 	interactiveShell remoteShellType = iota
+// 	nonInteractiveShell
+// )
 
 func (dialer *ViaSSHDialer) Dial(context context.Context, addr string) (net.Conn, error) {
 	return dialer.client.Dial("tcp", addr)

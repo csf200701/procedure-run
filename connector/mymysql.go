@@ -36,10 +36,14 @@ func (c MysqlConnector) Query(query string, args ...interface{}) (*sql.Rows, err
 	return rows, nil
 }
 
-func (c MysqlConnector) ConnectJoin() string {
+func (c MysqlConnector) ConnectJoin() (string, error) {
 	var collectionStr string
 	if c.IsSSH {
-		client, _ := DialWithPasswd(fmt.Sprintf("%v:%v", c.SSHHost, c.SSHPort), c.SSHUser, c.SSHPassword)
+		client, err := DialWithPasswd(fmt.Sprintf("%v:%v", c.SSHHost, c.SSHPort), c.SSHUser, c.SSHPassword)
+
+		if err != nil {
+			return "", err
+		}
 
 		procfStr := md5Str(fmt.Sprintf("%v:%v@tcp(%v:%v)/%v", c.User, c.Password, c.Host, c.Port, c.DbName)+"|"+
 			fmt.Sprintf("%v:%v@tcp(%v:%v)", c.SSHHost, c.SSHPort, c.SSHUser, c.SSHPassword)) + "+ssh"
@@ -49,11 +53,14 @@ func (c MysqlConnector) ConnectJoin() string {
 	} else {
 		collectionStr = fmt.Sprintf("%v:%v@tcp(%v:%v)/%v", c.User, c.Password, c.Host, c.Port, c.DbName)
 	}
-	return collectionStr
+	return collectionStr, nil
 }
 
 func (c MysqlConnector) fetchDB() (*sql.DB, error) {
-	collectionStr := c.ConnectJoin()
+	collectionStr, err := c.ConnectJoin()
+	if err != nil {
+		return nil, errors.New("该数据库连接失败，错误：" + err.Error())
+	}
 	db, err := sql.Open("mysql", collectionStr)
 	if err != nil {
 		return nil, errors.New("该数据库连接失败，错误：" + err.Error())

@@ -275,3 +275,7 @@ ls
 help
 ls
 create mm
+s
+create mm
+create -s mm
+create mm

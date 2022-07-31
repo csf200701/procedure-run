@@ -1,161 +1,12 @@
 package database
 
 import (
-	"fmt"
 	"net"
 	"procedure-run/connector"
-	"strconv"
 
 	// "gopkg.in/AlecAivazis/survey.v1"
 	survey "github.com/AlecAivazis/survey/v2"
 )
-
-var qs = []*survey.Question{
-	{
-		Name: "type",
-		Prompt: &survey.Select{
-			Message: "数据库类型（Mysql）?",
-			Options: []string{"Mysql", "PostgreSQL", "Oracle"},
-			Default: "Mysql",
-		},
-		Validate: func(ans interface{}) error {
-			return nil
-		},
-	},
-	{
-		Name:   "host",
-		Prompt: &survey.Input{Message: "主机地址（127.0.0.1）?"},
-		Validate: func(ans interface{}) error {
-			if err := survey.Required(ans); err != nil {
-				return nil
-			}
-			if str, ok := ans.(string); ok {
-				_, i := ParseIP(str)
-				if i == 0 {
-					return fmt.Errorf("主机地址格式不正确")
-				}
-			} else {
-
-				return fmt.Errorf("主机地址格式不正确")
-			}
-			return nil
-		},
-		Transform: survey.Title,
-	},
-	{
-		Name:   "port",
-		Prompt: &survey.Input{Message: "端口号（3306）?"},
-		Validate: func(ans interface{}) error {
-			if err := survey.Required(ans); err != nil {
-				return nil
-			}
-			if str, ok := ans.(string); ok {
-				_, err := strconv.ParseFloat(str, 64)
-				if err != nil {
-					return fmt.Errorf("端口号格式不正确")
-				}
-			} else {
-
-				return fmt.Errorf("端口号格式不正确")
-			}
-
-			return nil
-		},
-		Transform: survey.Title,
-	},
-	{
-		Name:   "user",
-		Prompt: &survey.Input{Message: "用户名（root）?"},
-		Validate: func(ans interface{}) error {
-			if err := survey.Required(ans); err != nil {
-				return nil
-			}
-			return nil
-		},
-		//Transform: survey.ToLower,
-	},
-	{
-		Name:   "password",
-		Prompt: &survey.Password{Message: "密码?"},
-		Validate: func(ans interface{}) error {
-			if err := survey.Required(ans); err != nil {
-				return fmt.Errorf("密码不能为空")
-			}
-			return nil
-		},
-	},
-	{
-		Name:   "db",
-		Prompt: &survey.Input{Message: "数据库名?"},
-		Validate: func(ans interface{}) error {
-			if err := survey.Required(ans); err != nil {
-				return fmt.Errorf("数据库名不能为空")
-			}
-			return nil
-		},
-	},
-}
-
-var qsssh = []*survey.Question{
-	{
-		Name:   "ssh_host",
-		Prompt: &survey.Input{Message: "SSH主机地址（127.0.0.1）?"},
-		Validate: func(ans interface{}) error {
-			if err := survey.Required(ans); err != nil {
-				return nil
-			}
-			if str, ok := ans.(string); ok {
-				_, i := ParseIP(str)
-				if i == 0 {
-					return fmt.Errorf("主机地址格式不正确")
-				}
-			} else {
-
-				return fmt.Errorf("主机地址格式不正确")
-			}
-			return nil
-		},
-		Transform: survey.Title,
-	},
-	{
-		Name:   "ssh_port",
-		Prompt: &survey.Input{Message: "SSH端口号（22）?"},
-		Validate: func(ans interface{}) error {
-			if err := survey.Required(ans); err != nil {
-				return nil
-			}
-			if str, ok := ans.(string); ok {
-				_, err := strconv.ParseFloat(str, 64)
-				if err != nil {
-					return fmt.Errorf("端口号格式不正确")
-				}
-			} else {
-
-				return fmt.Errorf("端口号格式不正确")
-			}
-
-			return nil
-		},
-		Transform: survey.Title,
-	},
-	{
-		Name:   "ssh_user",
-		Prompt: &survey.Input{Message: "SSH用户名（root）?"},
-		Validate: func(ans interface{}) error {
-			if err := survey.Required(ans); err != nil {
-				return nil
-			}
-			return nil
-		},
-	},
-	{
-		Name:   "ssh_password",
-		Prompt: &survey.Password{Message: "SSH密码?"},
-		Validate: func(ans interface{}) error {
-			return nil
-		},
-	},
-}
 
 func init() {
 	survey.SelectQuestionTemplate = `
@@ -180,15 +31,9 @@ func init() {
 
 func Ask(ssh bool) *connector.Collection {
 	collection := new(connector.Collection)
-	// var newqs []*survey.Question
-	// if ssh {
-	// 	newqs = append(qs, qsssh...)
-	// } else {
-	// 	newqs = qs
-	// }
-	survey.Ask(qs, collection)
+	survey.Ask(Questions(Type, Host, Port, User, Password, Db), collection)
 	if ssh {
-		survey.Ask(qsssh, collection)
+		survey.Ask(Questions(SSHHost, SSHPort, SSHUser, SSHPassword), collection)
 	}
 	return collection
 }

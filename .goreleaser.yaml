@@ -12,10 +12,10 @@ builds:
       - buildmode=c-share
     flags: -buildmode=c-share
     goos:
-      - linux
+      # - linux
       - windows
       # - darwin
-      - android
+      # - android
     goarch:
       - amd64
       - "386"

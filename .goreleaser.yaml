@@ -18,7 +18,7 @@ builds:
       # - android
     goarch:
       - amd64
-      - "386"
+      #- "386"
 archives:
   - replacements:
       darwin: Darwin

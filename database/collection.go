@@ -31,7 +31,12 @@ func init() {
 
 func Ask(ssh bool) *connector.Collection {
 	collection := new(connector.Collection)
-	survey.Ask(Questions(Type, Host, Port, User, Password, Db), collection)
+	survey.Ask(Questions(Type), collection)
+	if collection.DbType == connector.ORACLE {
+		survey.Ask(Questions(Host, Port, User, Password, OracleDb), collection)
+	} else {
+		survey.Ask(Questions(Host, Port, User, Password, Db), collection)
+	}
 	if ssh {
 		survey.Ask(Questions(SSHHost, SSHPort, SSHUser, SSHPassword), collection)
 	}

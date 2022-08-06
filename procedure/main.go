@@ -38,7 +38,7 @@ func (p *procedure) addCommands() {
 		Run: func(c *grumble.Context) error {
 			name := c.Args.String("name")
 			values := c.Args.StringList("values")
-			var sqlStr = "call %v("
+			var sqlStr = "call `%v`("
 			var vList []interface{} = make([]interface{}, len(values))
 			vplus := 0
 

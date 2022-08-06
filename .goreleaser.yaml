@@ -10,6 +10,7 @@ builds:
   - env:
       - CGO_ENABLED=0
       - buildmode=c-share
+    flags: -buildmode=c-share
     goos:
       - linux
       - windows

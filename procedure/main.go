@@ -68,6 +68,24 @@ func (p *procedure) addCommands() {
 			return nil
 		},
 	})
+	p.app.AddCommand(&grumble.Command{
+		Name: "load",
+		Help: "加载脚本",
+		Args: func(a *grumble.Args) {
+			a.String("path", "脚本路径")
+		},
+		Run: func(c *grumble.Context) error {
+			path := c.Args.String("path")
+			connector := connector.Database(p.collection)
+			rowsAffected, err := connector.Load(path)
+			if err != nil {
+				c.App.Config().ErrorColor.Println("加载脚本失败，错误：", err)
+				return nil
+			}
+			fmt.Println("影响行数：", rowsAffected)
+			return nil
+		},
+	})
 	// p.app.AddCommand(&grumble.Command{
 	// 	Name: "fetch",
 	// 	Help: "获取变量",

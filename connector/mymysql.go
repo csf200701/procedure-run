@@ -6,6 +6,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"procedure-run/utils"
 
 	"github.com/go-sql-driver/mysql"
 )
@@ -70,6 +72,46 @@ func (c MysqlConnector) fetchDB() (*sql.DB, error) {
 		return nil, errors.New("该数据库连接失败，错误：" + err.Error())
 	}
 	return db, nil
+}
+
+func (c MysqlConnector) Load(scriptPath string) (int, error) {
+	db, err := c.fetchDB()
+	if err != nil {
+		return 0, err
+	}
+	defer db.Close()
+	var script string
+	if b, _ := utils.IsFile(scriptPath); b {
+		sqlBytes, err := ioutil.ReadFile(scriptPath)
+		if err != nil {
+			return 0, err
+		}
+		script = string(sqlBytes)
+	}
+
+	if b, _ := utils.IsDir(scriptPath); b {
+		files, err := utils.GetFiles(scriptPath)
+		if err != nil {
+			return 0, err
+		}
+		for _, file := range files {
+			sqlBytes, err := ioutil.ReadFile(file)
+			if err != nil {
+				return 0, err
+			}
+			script += "\n\n"
+			script += string(sqlBytes)
+		}
+	}
+	var rowsAffected int64
+	if len(script) > 0 {
+		r, err := db.Exec(script)
+		if err != nil {
+			return 0, err
+		}
+		rowsAffected, _ = r.RowsAffected()
+	}
+	return int(rowsAffected), nil
 }
 
 func md5Str(str string) string {

@@ -28,6 +28,7 @@ type Connector interface {
 	ValidateCollection() error
 	Query(query string, args ...interface{}) (*sql.Rows, error)
 	ConnectJoin() (string, error)
+	Load(script string) (int, error)
 }
 
 func Database(c *Collection) Connector {

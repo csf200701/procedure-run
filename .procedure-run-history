@@ -281,3 +281,46 @@ create -s mm
 create mm
 create -s mm
 ls
+use my
+ls
+help
+load
+load ddddd
+call
+ls
+use
+use my
+load D:\工作区\test_user.sql
+l   oadD:\工作区/test_user.sql
+l    i   oadD:\工作区/test_user.sql
+load d:/工作区/test_user.sql
+use my
+load d:/工作区/test_user.sql
+load d:/工作区/script
+use my
+load d:/工作区/script
+ls
+use my
+load d:/工作区/script
+use my
+load d:/工作区/script
+use my
+load d:/工作区/script
+use my
+load d:/工作区/script
+use my
+load d:/工作区/script
+use my
+load d:/工作区/script
+use my
+load d:/工作区/script
+use my
+load d:/工作区/script
+use my
+load d:/工作区/script
+use my
+load d:/工作区/script
+use my
+load d:/工作区/script
+use my
+load d:/工作区/script

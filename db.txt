@@ -1,0 +1,1 @@
+for SQL in *.sql; do mysql -uroot -p"123456" mydb < $SQL; done

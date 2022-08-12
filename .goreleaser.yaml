@@ -9,16 +9,15 @@ before:
 builds:
   - env:
       - CGO_ENABLED=0
-      - buildmode=c-share
-    flags: -buildmode=c-share
+    # flags: 
     goos:
-      # - linux
+      - linux
       - windows
-      # - darwin
-      # - android
+      - darwin
+      - android
     goarch:
       - amd64
-      #- "386"
+      - "386"
 archives:
   - replacements:
       darwin: Darwin

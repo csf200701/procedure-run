@@ -14,7 +14,7 @@ builds:
       - linux
       - windows
       - darwin
-      - android
+     # - android
     goarch:
       - amd64
       - "386"

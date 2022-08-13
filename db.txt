@@ -1,1 +1,4 @@
 for SQL in *.sql; do mysql -uroot -p"123456" mydb < $SQL; done
+
+mysqldump –hhostname –uuser –ppassword–Pport db_name > db_name.sql
+默认情况下，不备份存储过程和函数，若要备份存储过程和函数，要加上-R选项
